@@ -1,7 +1,7 @@
 # Build
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
-COPY ["API/QTip.Api.csproj", "./"]
+COPY ["QTip.Api.csproj", "./"]
 RUN dotnet restore "QTip.Api.csproj"
 COPY . .
 RUN dotnet publish "QTip.Api.csproj" -c Release -o /app/publish
@@ -12,4 +12,4 @@ WORKDIR /app
 COPY --from=build /app/publish .
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
-ENTRYPOINT ["dotnet", "API.dll"]
+ENTRYPOINT ["dotnet", "QTip.Api.dll"]

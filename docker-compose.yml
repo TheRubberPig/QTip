@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres
+    shm_size: 64mb
+    environment:
+      POSTGRES_USER: qtipuser
+      POSTGRES_PASSWORD: qtippassword
+      POSTGRES_DB: qtipdb
+    ports:
+      - "5432:5432"
+
+  api:
+    build: ./API
+    ports:
+      - "8080:8080"
+    environment:
+      - CONNECTION_STRING=Host=db;Database=qtipdb;Username=qtipuser;Password=qtippassword
+    depends_on:
+      - db
+
+  ui:
+    build:
+      context: ./UI
+      dockerfile: Dockerfile
+    volumes:
+      - ./UI:/app
+      - /app/node_modules
+    ports:
+      - "3000:5173"
+    depends_on:
+      - api

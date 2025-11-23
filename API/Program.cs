@@ -6,7 +6,7 @@ using QTip.API.Database;
 var builder = WebApplication.CreateBuilder(args);
 
 // Infrastructure
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING") ?? builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDBContext>(options =>
     options.UseNpgsql(connectionString));
 
