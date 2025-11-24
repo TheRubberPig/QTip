@@ -1,3 +1,3 @@
-namespace QTip.Api.Database.DTOs;
+namespace QTip.Api.Models;
 
 public record ProcessingResult(string tokenizedContent);

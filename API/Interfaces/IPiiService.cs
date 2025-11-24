@@ -1,9 +1,10 @@
 using System.Threading.Tasks;
-using QTip.Api.Database.DTOs;
+using QTip.Api.Models;
 
 namespace QTip.Api.Interfaces;
 public interface IPiiService
 {
     Task<ProcessingResult> ProcessPiiAsync(string rawInput);
-    Task<int> GetPiiCountAsync();
+    Task<PiiStats> GetPiiCountAsync();
+    Task<PiiStats> GetPiiCountAsync(string type);
 }

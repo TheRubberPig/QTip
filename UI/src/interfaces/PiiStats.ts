@@ -1,3 +1,4 @@
 export interface PiiStats {
-  totalPiiDetected: number;
+  total: number;
+  emailCount: number;
 }

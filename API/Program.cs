@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using QTip.Api.Database.DTOs;
+using QTip.Api.Models;
 using QTip.Api.Interfaces;
 using QTip.Api.Services;
 using QTip.API.Database;
@@ -12,6 +12,16 @@ builder.Services.AddDbContext<AppDBContext>(options =>
 
 builder.Services.AddScoped<IPiiService, PiiService>();
 builder.Services.AddOpenApi();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("QTipCorsPolicy", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
 
@@ -28,16 +38,24 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.MapPost("/pii/submit", async (IPiiService piiService, Request request) =>
+app.UseCors("QTipCorsPolicy");
+
+app.MapPost("/pii/submit", async (IPiiService piiService, SubmitPii request) =>
 {
     var result = await piiService.ProcessPiiAsync(request.text);
     return Results.Ok(result);
 });
 
+app.MapGet("/pii/{type}/count", async (IPiiService piiService, string type) =>
+{
+    var stats = await piiService.GetPiiCountAsync();
+    return Results.Ok(stats);
+});
+
 app.MapGet("/pii/count", async (IPiiService piiService) =>
 {
-    var count = await piiService.GetPiiCountAsync();
-    return Results.Ok(new { emailPiiCount = count });
+    var stats = await piiService.GetPiiCountAsync();
+    return Results.Ok(stats);
 });
 
 app.MapGet("/status", () => Results.Ok("API is running."));

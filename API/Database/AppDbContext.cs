@@ -10,6 +10,6 @@ public class AppDBContext : DbContext
         
     }
     
-    public DbSet<Vault> PiiVault => Set<Vault>();
-    public DbSet<Submission> Submissions => Set<Submission>();
+    public DbSet<PiiVault> PiiVault => Set<PiiVault>();
+    public DbSet<TokenSubmission> Submissions => Set<TokenSubmission>();
 }  

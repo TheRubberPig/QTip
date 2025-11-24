@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using QTip.API.Database;
-using QTip.Api.Database.DTOs;
+using QTip.Api.Models;
 using QTip.Api.Interfaces;
 using QTip.Api.Database.Entities;
 using System.Text.RegularExpressions;
@@ -20,25 +20,23 @@ public class PiiService : IPiiService
     {
         var matches = emailRegex.Matches(rawInput);
         var uniqueEmails = matches.Select(m => m.Value).Distinct().ToList();
-        var submissionId = Guid.NewGuid();
         string processedInput = rawInput;
         foreach (var email in uniqueEmails)
         {
             var token = $"{{PII-{Guid.NewGuid().ToString().Substring(0,16)}}}";
-            var vaultEntry = new Vault
+            var vaultEntry = new PiiVault
             {
                 Id = Guid.NewGuid(),
                 Token = token,
                 OriginalValue = email,
-                Classification = "pii.email",
-                SubmissionId = submissionId
+                Classification = "pii.email"
             };
 
             dbContext.PiiVault.Add(vaultEntry);
             processedInput = processedInput.Replace(email, token);
         }
 
-        var submission = new Submission
+        var submission = new TokenSubmission
         {
             Id = Guid.NewGuid(),
             TokenizedContent = processedInput,
@@ -46,11 +44,36 @@ public class PiiService : IPiiService
         };
 
         dbContext.Submissions.Add(submission);
+        await dbContext.SaveChangesAsync();
         return new ProcessingResult(processedInput);
     }
 
-    public async Task<int> GetPiiCountAsync()
+    public async Task<PiiStats> GetPiiCountAsync()
     {
-        return await dbContext.PiiVault.CountAsync(x => x.Classification == "pii.email");
+        var stats = new PiiStats
+        {
+            Total = await dbContext.PiiVault.CountAsync()
+        };
+        return stats;
+    }
+
+    public async Task<PiiStats> GetPiiCountAsync(string type)
+    {
+        var stats = new PiiStats
+        {
+            EmailCount = await dbContext.PiiVault.CountAsync(x => x.Classification == GetClassification(type))
+        };
+        return stats;
+    }
+
+    private string GetClassification(string value)
+    {
+        switch (value)
+        {
+            case "email":
+                return "pii.email";
+            default:
+                throw new ArgumentException("Unsupported PII type");
+        }
     }
 }

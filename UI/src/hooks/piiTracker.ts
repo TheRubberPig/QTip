@@ -3,13 +3,13 @@ import { ApiService } from '../services/qtipApi';
 
 export const usePiiTracker = () => {
   const [text, setText] = useState('');
-  const [stats, setStats] = useState<number>(0);
+  const [stats, setStats] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
   const refreshStats = async () => {
     try {
       const data = await ApiService.getStats();
-      setStats(data.totalPiiDetected);
+      setStats(data.emailCount);
     } catch (error) {
       console.error("Error fetching stats:", error);
     }

@@ -1,6 +1,6 @@
 namespace QTip.Api.Database.Entities;
 
-public class Submission
+public class TokenSubmission
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public string TokenizedContent { get; set; } = string.Empty;

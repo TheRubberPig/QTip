@@ -3,12 +3,14 @@ import "tailwindcss";
 import { usePiiTracker } from './hooks/piiTracker';
 import { SecureInput } from './components/SecureInput';
 
-const Header = ({ stats }: { stats: number }) => (
+const Header = ({ stats }: { stats: number | null}) => (
   <header className="mb-8 flex justify-between items-center">
     <h1 className="text-3xl font-bold text-gray-800"> QTip </h1>
     <div className="bg-white p-4 rounded shadow text-center min-w-[150px]">
       <div className="text-xs text-gray-500 uppercase font-bold">Vault Items</div>
-      <div className="text-3xl font-bold text-indigo-600">{stats}</div>
+      <div className="text-3xl font-bold text-indigo-600">
+        {stats === null ? <span className="animate-pulse text-gray-400">...</span> : stats}
+        </div>
     </div>
   </header>
 );
@@ -39,7 +41,7 @@ function App() {
                 ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'}
               `}
             >
-              {loading ? 'Processing...' : 'Tokenize & Save'}
+              {loading ? 'Processing...' : 'Submit'}
             </button>
           </div>
         </main>

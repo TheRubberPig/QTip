@@ -5,7 +5,7 @@ const API_URL = "http://localhost:8080";
 
 export const ApiService = {
   getStats: async (): Promise<PiiStats> => {
-    const res = await fetch(`${API_URL}/pii/stats`);
+    const res = await fetch(`${API_URL}/pii/email/count`);
     if (!res.ok) throw new Error('Failed to fetch stats');
     return res.json();
   },
