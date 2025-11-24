@@ -12,7 +12,6 @@ builder.Services.AddDbContext<AppDBContext>(options =>
 
 builder.Services.AddScoped<IPiiService, PiiService>();
 builder.Services.AddSingleton<IPatternMatchingService, PatternMatchingService>();
-builder.Services.AddOpenApi();
 
 builder.Services.AddCors(options =>
 {
