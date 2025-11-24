@@ -6,11 +6,11 @@ import { SecureInput } from './components/SecureInput';
 const Header = ({ stats }: { stats: number | null}) => (
   <header className="mb-8 flex justify-between items-center">
     <h1 className="text-3xl font-bold text-gray-800"> QTip </h1>
-    <div className="bg-white p-4 rounded shadow text-center min-w-[150px]">
-      <div className="text-xs text-gray-500 uppercase font-bold">Vault Items</div>
-      <div className="text-3xl font-bold text-indigo-600">
-        {stats === null ? <span className="animate-pulse text-gray-400">...</span> : stats}
-        </div>
+    <div className="bg-white px-6 py-4 rounded shadow font-medium text-gray-700 border border-gray-100">
+        Total PII emails submitted: 
+        <span className="ml-2 text-indigo-600 font-bold text-lg">
+          {typeof stats === 'number' ? (stats) : (<span className="animate-pulse">...</span>)}
+        </span>
     </div>
   </header>
 );

@@ -9,42 +9,37 @@ namespace QTip.Api.Services;
 public class PiiService : IPiiService
 {
     private readonly AppDBContext dbContext;
-    private Regex emailRegex = new(@"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", RegexOptions.Compiled);
+    private readonly IPatternMatchingService patternService;
 
-    public PiiService(AppDBContext dbContext)
+    public PiiService(IPatternMatchingService patternService, AppDBContext dbContext)
     {
         this.dbContext = dbContext;
+        this.patternService = patternService;
     }
 
     public async Task<ProcessingResult> ProcessPiiAsync(string rawInput)
     {
-        var matches = emailRegex.Matches(rawInput);
-        var uniqueEmails = matches.Select(m => m.Value).Distinct().ToList();
+        // Get data matches
+        List<string> matches = patternService.GetMatches(rawInput, ClassificationTypes.Email);
+
+        // Set variables
+        List<PiiVault> vaultList = new List<PiiVault>();
         string processedInput = rawInput;
-        foreach (var email in uniqueEmails)
-        {
-            var token = $"{{PII-{Guid.NewGuid().ToString().Substring(0,16)}}}";
-            var vaultEntry = new PiiVault
-            {
-                Id = Guid.NewGuid(),
-                Token = token,
-                OriginalValue = email,
-                Classification = "pii.email"
-            };
 
-            dbContext.PiiVault.Add(vaultEntry);
-            processedInput = processedInput.Replace(email, token);
-        }
+        // Tokenize data
+        processedInput = TokenizeData(matches, vaultList, processedInput);
 
-        var submission = new TokenSubmission
+        // Store submission
+        TokenSubmission submission = new TokenSubmission
         {
-            Id = Guid.NewGuid(),
-            TokenizedContent = processedInput,
-            CreatedAt = DateTime.UtcNow
+            TokenizedContent = processedInput
         };
 
         dbContext.Submissions.Add(submission);
         await dbContext.SaveChangesAsync();
+
+        // Store tokens in vault linked to submission id and return
+        await AddTokensToVault(vaultList, submission);
         return new ProcessingResult(processedInput);
     }
 
@@ -57,7 +52,7 @@ public class PiiService : IPiiService
         return stats;
     }
 
-    public async Task<PiiStats> GetPiiCountAsync(string type)
+    public async Task<PiiStats> GetPiiCountAsync(ClassificationTypes type)
     {
         var stats = new PiiStats
         {
@@ -66,11 +61,39 @@ public class PiiService : IPiiService
         return stats;
     }
 
-    private string GetClassification(string value)
+    private static string TokenizeData(List<string> matches, List<PiiVault> vaultList, string processedInput)
+    {
+        foreach (string data in matches)
+        {
+            PiiVault vaultEntry = new PiiVault
+            {
+                Token = $"{{PII-{Guid.NewGuid().ToString().Substring(0, 16)}}}",
+                OriginalValue = data,
+                Classification = GetClassification(ClassificationTypes.Email)
+            };
+
+            vaultList.Add(vaultEntry);
+            processedInput = processedInput.Replace(data, vaultEntry.Token);
+        }
+
+        return processedInput;
+    }
+
+    private async Task AddTokensToVault(List<PiiVault> vaultList, TokenSubmission submission)
+    {
+        foreach (var item in vaultList)
+        {
+            item.SubmissionId = submission.Id;
+            dbContext.PiiVault.Add(item);
+        }
+        await dbContext.SaveChangesAsync();
+    }
+
+    private static string GetClassification(ClassificationTypes value)
     {
         switch (value)
         {
-            case "email":
+            case ClassificationTypes.Email:
                 return "pii.email";
             default:
                 throw new ArgumentException("Unsupported PII type");

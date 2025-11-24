@@ -6,5 +6,5 @@ public interface IPiiService
 {
     Task<ProcessingResult> ProcessPiiAsync(string rawInput);
     Task<PiiStats> GetPiiCountAsync();
-    Task<PiiStats> GetPiiCountAsync(string type);
+    Task<PiiStats> GetPiiCountAsync(ClassificationTypes type);
 }

@@ -11,6 +11,7 @@ builder.Services.AddDbContext<AppDBContext>(options =>
     options.UseNpgsql(connectionString));
 
 builder.Services.AddScoped<IPiiService, PiiService>();
+builder.Services.AddSingleton<IPatternMatchingService, PatternMatchingService>();
 builder.Services.AddOpenApi();
 
 builder.Services.AddCors(options =>
@@ -46,9 +47,9 @@ app.MapPost("/pii/submit", async (IPiiService piiService, SubmitPii request) =>
     return Results.Ok(result);
 });
 
-app.MapGet("/pii/{type}/count", async (IPiiService piiService, string type) =>
+app.MapGet("/pii/{type}/count", async (IPiiService piiService, ClassificationTypes type) =>
 {
-    var stats = await piiService.GetPiiCountAsync();
+    var stats = await piiService.GetPiiCountAsync(type);
     return Results.Ok(stats);
 });
 
